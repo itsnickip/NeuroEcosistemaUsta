@@ -1,4 +1,4 @@
-.# EcosistemasNeurito
+## EcosistemasNeurito
 
 Simulación 2D de **presas y depredadores** que deciden cómo moverse con redes neuronales multicapa escritas desde cero en NumPy. Proyecto Final Integrador de **Electiva I de Profundización — Inteligencia Artificial, Universidad Santo Tomás, seccional Tunja**.
 
