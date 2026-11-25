@@ -4,17 +4,6 @@ Simulación 2D de **presas y depredadores** que deciden cómo moverse con redes 
 
 **Integrantes:** Michelt Camargo · Nicoll Pérez · Sergio Ávila
 
-![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-3776AB?style=flat-square&logo=python&logoColor=white)
-![NumPy](https://img.shields.io/badge/NumPy-2.x-013243?style=flat-square&logo=numpy&logoColor=white)
-![Pygame CE](https://img.shields.io/badge/Pygame--CE-2.5-ffbf48?style=flat-square)
-![Red 8-14-16-12-5](https://img.shields.io/badge/red-8%E2%86%9214%E2%86%9216%E2%86%9212%E2%86%925-5ccdff?style=flat-square)
-![14 pruebas](https://img.shields.io/badge/pruebas-14%2F14-8ade5c?style=flat-square)
-![240 episodios](https://img.shields.io/badge/evaluaci%C3%B3n-240%20episodios-ff6880?style=flat-square)
-
-![Visor de EcosistemasNeurito con tema oscuro e inspector de la red](docs/interfaz.png)
-
-El visor permite cambiar de escenario y de política, pausar, repetir una semilla e inspeccionar las 8 entradas y las 5 probabilidades Softmax de cualquier agente. El motor también funciona sin ventana para entrenar y ejecutar experimentos reproducibles. **El método de aprendizaje es imitación supervisada de reglas; no es aprendizaje por refuerzo.**
-
 ---
 
 ## Inicio rápido
