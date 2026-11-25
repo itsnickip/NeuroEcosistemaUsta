@@ -1,0 +1,194 @@
+{
+  "method": "aprendizaje supervisado por imitacion de politicas de referencia",
+  "seed": 42,
+  "train_world_seed_start": 1042,
+  "validation_world_seed_start": 200042,
+  "epochs": 80,
+  "batch_size": 64,
+  "learning_rate": 0.004,
+  "optimizer": "Adam (beta1=0.9, beta2=0.999)",
+  "loss": "entropia cruzada",
+  "activations": {
+    "ocultas": "ReLU",
+    "salida": "Softmax"
+  },
+  "input_size": 8,
+  "predator_low_energy_augmentation": {
+    "every_nth_episode": 3,
+    "initial_energy_range": [
+      0.12,
+      0.24
+    ],
+    "reason": "cubrir decisiones de descanso y persecucion en entrenamiento y validacion"
+  },
+  "architectures": {
+    "prey": {
+      "base": {
+        "hidden_sizes": [
+          14,
+          16,
+          12
+        ],
+        "layers": [
+          8,
+          14,
+          16,
+          12,
+          5
+        ],
+        "input_size": 8,
+        "output_size": 5,
+        "train_examples": 8000,
+        "validation_examples": 2200,
+        "train_class_counts": [
+          113,
+          1888,
+          1924,
+          2162,
+          1913
+        ],
+        "validation_class_counts": [
+          0,
+          637,
+          543,
+          594,
+          426
+        ],
+        "initial_file": "prey_base_inicial.npz",
+        "trained_file": "prey_base_entrenado.npz",
+        "parameter_change_l2": 26.63651002012283,
+        "final_epoch": {
+          "epoch": 80,
+          "loss": 0.11948209814507936,
+          "accuracy": 0.953375,
+          "val_loss": 0.5281346470622268,
+          "val_accuracy": 0.8872727272727273
+        }
+      },
+      "alternativa": {
+        "hidden_sizes": [
+          16,
+          12
+        ],
+        "layers": [
+          8,
+          16,
+          12,
+          5
+        ],
+        "input_size": 8,
+        "output_size": 5,
+        "train_examples": 8000,
+        "validation_examples": 2200,
+        "train_class_counts": [
+          113,
+          1888,
+          1924,
+          2162,
+          1913
+        ],
+        "validation_class_counts": [
+          0,
+          637,
+          543,
+          594,
+          426
+        ],
+        "initial_file": "prey_alternativa_inicial.npz",
+        "trained_file": "prey_alternativa_entrenado.npz",
+        "parameter_change_l2": 32.53218909743164,
+        "final_epoch": {
+          "epoch": 80,
+          "loss": 0.18009450087971757,
+          "accuracy": 0.9335,
+          "val_loss": 0.5432112455585651,
+          "val_accuracy": 0.8318181818181818
+        }
+      }
+    },
+    "predator": {
+      "base": {
+        "hidden_sizes": [
+          14,
+          16,
+          12
+        ],
+        "layers": [
+          8,
+          14,
+          16,
+          12,
+          5
+        ],
+        "input_size": 8,
+        "output_size": 5,
+        "train_examples": 8000,
+        "validation_examples": 2200,
+        "train_class_counts": [
+          1582,
+          1400,
+          1496,
+          1707,
+          1815
+        ],
+        "validation_class_counts": [
+          488,
+          381,
+          487,
+          465,
+          379
+        ],
+        "initial_file": "predator_base_inicial.npz",
+        "trained_file": "predator_base_entrenado.npz",
+        "parameter_change_l2": 14.735502123481222,
+        "final_epoch": {
+          "epoch": 80,
+          "loss": 0.23786897474982677,
+          "accuracy": 0.922125,
+          "val_loss": 0.1646730765870699,
+          "val_accuracy": 0.9359090909090909
+        }
+      },
+      "alternativa": {
+        "hidden_sizes": [
+          16,
+          12
+        ],
+        "layers": [
+          8,
+          16,
+          12,
+          5
+        ],
+        "input_size": 8,
+        "output_size": 5,
+        "train_examples": 8000,
+        "validation_examples": 2200,
+        "train_class_counts": [
+          1582,
+          1400,
+          1496,
+          1707,
+          1815
+        ],
+        "validation_class_counts": [
+          488,
+          381,
+          487,
+          465,
+          379
+        ],
+        "initial_file": "predator_alternativa_inicial.npz",
+        "trained_file": "predator_alternativa_entrenado.npz",
+        "parameter_change_l2": 21.074928799776046,
+        "final_epoch": {
+          "epoch": 80,
+          "loss": 0.10356717852934394,
+          "accuracy": 0.94925,
+          "val_loss": 0.16954901018792376,
+          "val_accuracy": 0.9118181818181819
+        }
+      }
+    }
+  }
+}

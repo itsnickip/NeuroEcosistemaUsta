@@ -1,0 +1,231 @@
+Metadata-Version: 2.4
+Name: ecosistemas-neurito-usta
+Version: 2.0.0
+Summary: EcosistemasNeurito: presas y depredadores con redes neuronales 8-14-16-12-5
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+Requires-Dist: numpy<3.0,>=2.0
+Requires-Dist: pygame-ce<3.0,>=2.5
+
+# 🌙 EcosistemasNeurito
+
+Simulación 2D de **presas y depredadores** que deciden cómo moverse con redes neuronales multicapa escritas desde cero en NumPy. Proyecto Final Integrador de **Electiva I de Profundización — Inteligencia Artificial, Universidad Santo Tomás, seccional Tunja**.
+
+**Integrantes:** Michelt Camargo · Nicoll Pérez · Sergio Ávila
+
+![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-3776AB?style=flat-square&logo=python&logoColor=white)
+![NumPy](https://img.shields.io/badge/NumPy-2.x-013243?style=flat-square&logo=numpy&logoColor=white)
+![Pygame CE](https://img.shields.io/badge/Pygame--CE-2.5-ffbf48?style=flat-square)
+![Red 8-14-16-12-5](https://img.shields.io/badge/red-8%E2%86%9214%E2%86%9216%E2%86%9212%E2%86%925-5ccdff?style=flat-square)
+![14 pruebas](https://img.shields.io/badge/pruebas-14%2F14-8ade5c?style=flat-square)
+![240 episodios](https://img.shields.io/badge/evaluaci%C3%B3n-240%20episodios-ff6880?style=flat-square)
+
+![Visor de EcosistemasNeurito con tema oscuro e inspector de la red](docs/interfaz.png)
+
+El visor permite cambiar de escenario y de política, pausar, repetir una semilla e inspeccionar las 8 entradas y las 5 probabilidades Softmax de cualquier agente. El motor también funciona sin ventana para entrenar y ejecutar experimentos reproducibles. **El método de aprendizaje es imitación supervisada de reglas; no es aprendizaje por refuerzo.**
+
+---
+
+## ⚡ Inicio rápido
+
+Necesitas **Python 3.12 o superior** y [uv](https://docs.astral.sh/uv/). Desde la raíz del proyecto:
+
+```powershell
+uv sync --locked
+uv run --locked python -m ecosistemas_neurito view
+```
+
+Los modelos entrenados vienen incluidos en `models/`, así que el visor abre sin volver a entrenar. Sin uv: crea un entorno virtual, instala con `python -m pip install -e .` y ejecuta `python -m ecosistemas_neurito view`.
+
+Para abrir un escenario concreto:
+
+```powershell
+uv run --locked python -m ecosistemas_neurito view --scenario presion --seed 101
+```
+
+---
+
+## 🧠 La red neuronal
+
+Cada especie tiene su propia red (`ecosistemas_neurito/network.py`, clase `RedNeurito`):
+
+```
+            ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
+ observación│ ENTRADA  │──▶│ OCULTA 1 │──▶│ OCULTA 2 │──▶│ OCULTA 3 │──▶│  SALIDA  │──▶ argmax → acción
+            │ 8 neur.  │   │ 14 ReLU  │   │ 16 ReLU  │   │ 12 ReLU  │   │ 5 Softmax│
+            └──────────┘   └──────────┘   └──────────┘   └──────────┘   └──────────┘
+```
+
+| Capa       | Neuronas | Activación | Qué hace                                                        |
+| ---------- | -------: | ---------- | --------------------------------------------------------------- |
+| Entrada    |        8 | —          | Recibe las 8 observaciones normalizadas del agente.             |
+| Oculta 1   |       14 | ReLU       | Primeras combinaciones de energía, direcciones y distancias.    |
+| Oculta 2   |       16 | ReLU       | Capa más ancha: mezcla las señales de alimento y amenaza.       |
+| Oculta 3   |       12 | ReLU       | Comprime la representación antes de decidir.                    |
+| Salida     |        5 | Softmax    | Probabilidad de `quieto`, `arriba`, `abajo`, `izquierda`, `derecha`. |
+
+La acción ejecutada es la de **mayor probabilidad** (`argmax`). En modo neuronal esa salida entra directo al motor; ninguna regla la reemplaza.
+
+Para la comparación entre arquitecturas se entrena además una variante **alternativa** más superficial:
+
+| Configuración | Capas                    | Capas ocultas | Parámetros |
+| ------------- | ------------------------ | ------------: | ---------: |
+| `base`        | 8 → 14 → 16 → 12 → 5     |             3 |        635 |
+| `alternativa` | 8 → 16 → 12 → 5          |             2 |        413 |
+
+Las funciones `relu`, `relu_derivada` y `softmax` están definidas explícitamente al inicio de `network.py`. Las arquitecturas se cambian en una sola línea: `ARCHITECTURES` en `training.py`.
+
+### Entradas (8 por especie)
+
+| # | Presa                    | Depredador                       |
+| - | ------------------------ | -------------------------------- |
+| 1 | Energía                  | Energía                          |
+| 2 | Alimento Δx              | Presa Δx                         |
+| 3 | Alimento Δy              | Presa Δy                         |
+| 4 | Distancia al alimento    | Distancia a la presa             |
+| 5 | Depredador Δx            | Posición x en el mapa            |
+| 6 | Depredador Δy            | Posición y en el mapa            |
+| 7 | Distancia al depredador  | Fracción de presas vivas         |
+| 8 | Distancia al borde       | Distancia al depredador compañero |
+
+Coordenadas relativas en `[-1, 1]`; energía, distancias y fracciones en `[0, 1]`. Si no existe el objetivo, Δx = Δy = 0 y distancia = 1.
+
+---
+
+## 🏋️ Entrenamiento
+
+```mermaid
+flowchart LR
+    A["Mundo 2D + semilla"] --> B["Reglas de referencia<br/>etiquetan cada estado"]
+    B --> C["Ejemplos (8 entradas, acción)"]
+    C --> D["Mini-lotes de 64"]
+    D --> E["Forward: ReLU → Softmax"]
+    E --> F["Entropía cruzada"]
+    F --> G["Backpropagation"]
+    G --> H["Adam · lr 0.004"]
+    H -->|80 épocas| D
+    H --> I["models/*.npz + historial"]
+```
+
+| Hiperparámetro      | Valor                                  |
+| ------------------- | -------------------------------------- |
+| Épocas              | 80                                     |
+| Batch (mini-lote)   | 64                                     |
+| Learning rate       | 0.004                                  |
+| Optimizador         | Adam (β₁ = 0.9, β₂ = 0.999)            |
+| Pérdida             | Entropía cruzada                       |
+| Inicialización      | He (normal, √(2/n))                    |
+| Ejemplos            | 8000 entrenamiento · 2200 validación por especie |
+| Semillas            | 42 (modelo), 1042 (mundos de entrenamiento), 200042 (validación) |
+
+Resultado del entrenamiento incluido en `models/entrenamiento.json`:
+
+| Especie    | Arquitectura  | Precisión de validación | Cambio de pesos (L2) |
+| ---------- | ------------- | ----------------------: | -------------------: |
+| Presa      | base          |                  88,7 % |                26,64 |
+| Presa      | alternativa   |                  83,2 % |                32,53 |
+| Depredador | base          |                  93,6 % |                14,74 |
+| Depredador | alternativa   |                  91,2 % |                21,08 |
+
+Se guardan los pesos **iniciales y entrenados** (`*_inicial.npz`, `*_entrenado.npz`) y el historial de pérdida/precisión por época (`*_historial.json`).
+
+---
+
+## 🌍 El mundo
+
+| Especie    | Objetivo de la política de referencia                                             |
+| ---------- | --------------------------------------------------------------------------------- |
+| Presa      | Buscar alimento o huir si hay un depredador a menos de 130 unidades.               |
+| Depredador | Perseguir la presa más cercana; con poca energía y presa lejana, descansar.        |
+
+El mapa mide 800 × 600. Moverse gasta energía; comer plantas o capturar presas la repone. Un episodio termina a los 300 pasos o cuando no quedan presas. Todas las reglas, radios, costos y ganancias están en [`WorldConfig`](ecosistemas_neurito/world.py).
+
+| Escenario  | Presas | Depredadores | Plantas | Regeneración |
+| ---------- | -----: | -----------: | ------: | -----------: |
+| Abundancia |      6 |            1 |      28 |     12 pasos |
+| Escasez    |      6 |            1 |       7 |     85 pasos |
+| Presión    |      6 |            3 |      18 |     35 pasos |
+
+---
+
+## 📊 Entrenar y evaluar
+
+```powershell
+uv run --locked python -m ecosistemas_neurito train
+uv run --locked python -m ecosistemas_neurito evaluate
+uv run --locked python -m unittest discover -s tests -v
+```
+
+`evaluate` cambia una especie a la vez y deja la otra con reglas. Compara **pesos iniciales, red base entrenada, red alternativa entrenada, reglas y azar** con las mismas ocho semillas (`101` a `808`): **3 escenarios × 2 especies × 5 casos × 8 semillas = 240 episodios**. Genera en `results/`: `episodios.csv`, `resumen.csv`, `configuracion.json` y dos gráficas SVG.
+
+Medias de ocho episodios por caso:
+
+**Supervivencia media de las presas (pasos)**
+
+| Escenario  | Inicial | Base 8-14-16-12-5 | Alternativa 8-16-12-5 | Reglas |  Azar |
+| ---------- | ------: | ----------------: | --------------------: | -----: | ----: |
+| Abundancia |  155,83 |            229,21 |                247,10 | 255,29 | 163,62 |
+| Escasez    |  162,94 |            231,98 |                237,75 | 252,10 | 163,62 |
+| Presión    |  115,52 |            163,52 |                173,48 | 177,17 |  85,65 |
+
+**Capturas totales del depredador**
+
+| Escenario  | Inicial | Base 8-14-16-12-5 | Alternativa 8-16-12-5 | Reglas | Azar |
+| ---------- | ------: | ----------------: | --------------------: | -----: | ---: |
+| Abundancia |    0,12 |              1,25 |                  0,75 |   1,50 | 0,00 |
+| Escasez    |    0,00 |              1,25 |                  0,88 |   1,62 | 0,00 |
+| Presión    |    0,00 |              4,12 |                  4,00 |   4,75 | 0,00 |
+
+**Lectura:**
+
+- El entrenamiento mejora claramente frente a los pesos iniciales y frente al azar en las dos especies.
+- Ninguna red supera a las reglas que le dieron las etiquetas: imitan la política, pero cometen errores en estados poco vistos.
+- En depredadores, la red base (3 capas ocultas) captura más que la alternativa, coherente con su mayor precisión de validación.
+- En presas ocurre lo contrario: la alternativa sobrevive más aunque su precisión de validación es menor. **La precisión mide imitación de etiquetas, no supervivencia**; es un resultado para discutir en el informe.
+
+---
+
+## 🎮 Usar el visor
+
+Selecciona un escenario, elige una política para cada especie y haz clic en un agente. La pestaña **Decisión** muestra la salida Softmax (la acción ganadora resaltada en ámbar); **Entradas** muestra los 8 valores que recibió la capa de entrada. Las presas miran hacia donde se movieron y los depredadores dejan una línea en su dirección de avance.
+
+| Acción                  | Control visible           | Atajo         |
+| ----------------------- | ------------------------- | ------------- |
+| Pausar o continuar      | **Pausar / Continuar**    | `Espacio`     |
+| Repetir el mismo mundo  | **Reiniciar**             | `R`           |
+| Crear otro mundo        | **Nueva semilla**         | `N`           |
+| Cambiar escenario       | Selector superior         | `1`, `2`, `3` |
+| Cambiar política        | Botones del panel derecho | `P` / `D`     |
+| Ajustar velocidad       | `−` / `+` bajo el mundo   | `-` / `+`     |
+| Ayuda                   | **Ayuda**                 | `H`           |
+
+Cambiar una política afecta los pasos siguientes. Para comparar desde las mismas posiciones, elige la política y pulsa **Reiniciar**.
+
+---
+
+## 📁 Estructura
+
+| Ruta                                                         | Contenido                                                            |
+| ------------------------------------------------------------ | -------------------------------------------------------------------- |
+| [`ecosistemas_neurito/network.py`](ecosistemas_neurito/network.py)       | `RedNeurito`: ReLU, Softmax, backpropagation, Adam, guardado NPZ.   |
+| [`ecosistemas_neurito/training.py`](ecosistemas_neurito/training.py)     | Arquitecturas, hiperparámetros, generación de ejemplos y entrenamiento. |
+| [`ecosistemas_neurito/world.py`](ecosistemas_neurito/world.py)           | Mundo 2D, energía, capturas, escenarios y las 8 observaciones.      |
+| [`ecosistemas_neurito/policies.py`](ecosistemas_neurito/policies.py)     | Políticas de referencia (reglas) y azar.                            |
+| [`ecosistemas_neurito/experiments.py`](ecosistemas_neurito/experiments.py) | Matriz de 240 episodios, CSV y gráficas SVG.                      |
+| [`ecosistemas_neurito/viewer.py`](ecosistemas_neurito/viewer.py)         | Visor Pygame con tema oscuro e inspector de la red.                 |
+| [`ecosistemas_neurito/cli.py`](ecosistemas_neurito/cli.py)               | Comandos `train`, `evaluate` y `view`.                              |
+| [`models/`](models/)                                         | Pesos iniciales/entrenados, historiales y manifiesto.                |
+| [`tests/`](tests/)                                           | 14 pruebas: activaciones, red, mundo y flujo completo.               |
+| [`docs/interfaz.png`](docs/interfaz.png)                     | Captura del visor.                                                   |
+| [`REQUISITOS.md`](REQUISITOS.md)                             | Correspondencia entre la propuesta y la evidencia.                   |
+| [`SUSTENTACION.md`](SUSTENTACION.md)                         | Guion de demostración y preguntas para la defensa.                   |
+
+---
+
+## ⚠️ Límites
+
+Modelo académico simplificado: movimiento en cuatro direcciones, observación del objetivo más cercano, sin obstáculos, reproducción ni memoria temporal. Cada arquitectura se entrenó una sola vez y ocho semillas no bastan para afirmar superioridad general. En el escenario de escasez cambian a la vez la cantidad y la regeneración de plantas. Si se modifican parámetros, reglas o semillas, hay que volver a entrenar y evaluar antes de citar resultados.
+
+---
+
+<sub>EcosistemasNeurito · Michelt Camargo, Nicoll Pérez, Sergio Ávila · USTA Tunja · 2026</sub>

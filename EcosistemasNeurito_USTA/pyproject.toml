@@ -1,0 +1,20 @@
+[project]
+name = "ecosistemas-neurito-usta"
+version = "2.0.0"
+description = "EcosistemasNeurito: presas y depredadores con redes neuronales 8-14-16-12-5"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.0,<3.0",
+    "pygame-ce>=2.5,<3.0",
+]
+
+[project.scripts]
+ecosistemas_neurito = "ecosistemas_neurito.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["ecosistemas_neurito"]

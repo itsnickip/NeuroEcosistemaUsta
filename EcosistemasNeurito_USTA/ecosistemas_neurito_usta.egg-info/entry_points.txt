@@ -1,0 +1,2 @@
+[console_scripts]
+ecosistemas_neurito = ecosistemas_neurito.cli:main

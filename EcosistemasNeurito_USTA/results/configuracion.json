@@ -1,0 +1,104 @@
+{
+  "scenarios": [
+    "abundante",
+    "escasez",
+    "presion"
+  ],
+  "scenario_parameters": {
+    "abundante": {
+      "name": "abundante",
+      "width": 800,
+      "height": 600,
+      "prey_count": 6,
+      "predator_count": 1,
+      "food_count": 28,
+      "max_steps": 300,
+      "food_respawn_steps": 12,
+      "prey_speed": 5.0,
+      "predator_speed": 5.2,
+      "prey_energy_cost": 0.003,
+      "predator_energy_cost": 0.004,
+      "rest_energy_cost": 0.001,
+      "food_energy_gain": 0.35,
+      "capture_energy_gain": 0.55,
+      "food_radius": 13.0,
+      "capture_radius": 18.0,
+      "danger_radius": 130.0
+    },
+    "escasez": {
+      "name": "escasez",
+      "width": 800,
+      "height": 600,
+      "prey_count": 6,
+      "predator_count": 1,
+      "food_count": 7,
+      "max_steps": 300,
+      "food_respawn_steps": 85,
+      "prey_speed": 5.0,
+      "predator_speed": 5.2,
+      "prey_energy_cost": 0.003,
+      "predator_energy_cost": 0.004,
+      "rest_energy_cost": 0.001,
+      "food_energy_gain": 0.35,
+      "capture_energy_gain": 0.55,
+      "food_radius": 13.0,
+      "capture_radius": 18.0,
+      "danger_radius": 130.0
+    },
+    "presion": {
+      "name": "presion",
+      "width": 800,
+      "height": 600,
+      "prey_count": 6,
+      "predator_count": 3,
+      "food_count": 18,
+      "max_steps": 300,
+      "food_respawn_steps": 35,
+      "prey_speed": 5.0,
+      "predator_speed": 5.2,
+      "prey_energy_cost": 0.003,
+      "predator_energy_cost": 0.004,
+      "rest_energy_cost": 0.001,
+      "food_energy_gain": 0.35,
+      "capture_energy_gain": 0.55,
+      "food_radius": 13.0,
+      "capture_radius": 18.0,
+      "danger_radius": 130.0
+    }
+  },
+  "evaluated_species": [
+    "prey",
+    "predator"
+  ],
+  "cases": [
+    "inicial",
+    "entrenado",
+    "arquitectura_b",
+    "reglas",
+    "aleatorio"
+  ],
+  "seeds": [
+    101,
+    202,
+    303,
+    404,
+    505,
+    606,
+    707,
+    808
+  ],
+  "fixed_opponent_policy": "reglas",
+  "metrics": [
+    "prey_survival_mean",
+    "prey_food_total",
+    "predator_captures_total",
+    "prey_energy_mean",
+    "predator_energy_mean",
+    "prey_alive",
+    "predator_alive",
+    "time_to_first_capture",
+    "capture_occurred",
+    "episode_steps"
+  ],
+  "comparison_design": "una politica candidata por especie; oponente basado en reglas fijo; semillas emparejadas"
+}
