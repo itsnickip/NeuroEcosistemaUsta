@@ -1,4 +1,4 @@
-# 🌙 EcosistemasNeurito
+.# EcosistemasNeurito
 
 Simulación 2D de **presas y depredadores** que deciden cómo moverse con redes neuronales multicapa escritas desde cero en NumPy. Proyecto Final Integrador de **Electiva I de Profundización — Inteligencia Artificial, Universidad Santo Tomás, seccional Tunja**.
 
@@ -17,7 +17,7 @@ El visor permite cambiar de escenario y de política, pausar, repetir una semill
 
 ---
 
-## ⚡ Inicio rápido
+## Inicio rápido
 
 Necesitas **Python 3.12 o superior** y [uv](https://docs.astral.sh/uv/). Desde la raíz del proyecto:
 
@@ -36,7 +36,7 @@ uv run --locked python -m ecosistemas_neurito view --scenario presion --seed 101
 
 ---
 
-## 🧠 La red neuronal
+## La red neuronal
 
 Cada especie tiene su propia red (`ecosistemas_neurito/network.py`, clase `RedNeurito`):
 
@@ -83,7 +83,7 @@ Coordenadas relativas en `[-1, 1]`; energía, distancias y fracciones en `[0, 1]
 
 ---
 
-## 🏋️ Entrenamiento
+## Entrenamiento
 
 ```mermaid
 flowchart LR
@@ -122,7 +122,7 @@ Se guardan los pesos **iniciales y entrenados** (`*_inicial.npz`, `*_entrenado.n
 
 ---
 
-## 🌍 El mundo
+##  El mundo
 
 | Especie    | Objetivo de la política de referencia                                             |
 | ---------- | --------------------------------------------------------------------------------- |
@@ -139,7 +139,7 @@ El mapa mide 800 × 600. Moverse gasta energía; comer plantas o capturar presas
 
 ---
 
-## 📊 Entrenar y evaluar
+##  Entrenar y evaluar
 
 ```powershell
 uv run --locked python -m ecosistemas_neurito train
@@ -176,7 +176,7 @@ Medias de ocho episodios por caso:
 
 ---
 
-## 🎮 Usar el visor
+##  Usar el visor
 
 Selecciona un escenario, elige una política para cada especie y haz clic en un agente. La pestaña **Decisión** muestra la salida Softmax (la acción ganadora resaltada en ámbar); **Entradas** muestra los 8 valores que recibió la capa de entrada. Las presas miran hacia donde se movieron y los depredadores dejan una línea en su dirección de avance.
 
@@ -194,7 +194,7 @@ Cambiar una política afecta los pasos siguientes. Para comparar desde las misma
 
 ---
 
-## 📁 Estructura
+##  Estructura
 
 | Ruta                                                         | Contenido                                                            |
 | ------------------------------------------------------------ | -------------------------------------------------------------------- |
@@ -213,7 +213,7 @@ Cambiar una política afecta los pasos siguientes. Para comparar desde las misma
 
 ---
 
-## ⚠️ Límites
+##  Límites
 
 Modelo académico simplificado: movimiento en cuatro direcciones, observación del objetivo más cercano, sin obstáculos, reproducción ni memoria temporal. Cada arquitectura se entrenó una sola vez y ocho semillas no bastan para afirmar superioridad general. En el escenario de escasez cambian a la vez la cantidad y la regeneración de plantas. Si se modifican parámetros, reglas o semillas, hay que volver a entrenar y evaluar antes de citar resultados.
 
